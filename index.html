@@ -3,53 +3,38 @@
   <head>
     <title>WebRTC test</title>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.8.1/mustache.min.js"></script>
     <script type="text/javascript" src="http://cdn.peerjs.com/0.3/peer.js"></script>
     <script type="text/javascript" src="script.js"></script>
-
     <link href="style.css" rel="stylesheet" type="text/css">
-
-    <script id="approve-modal-template" type="text/template">
-      <div class="overlay">
-        <div class="modal">
-          {{peerCode}} is trying to connect.
-          <button class="approve">Approve</button>
-          <button class="deny">Deny</button>
-        </div>
-      </div>
-    </script>
-
-    <script id="chatbox-template" type="text/template">
-      <div class="chatbox connection active" id="{{peerCode}}">
-        <span>Connected to
-          <strong>
-            {{peerCode}}
-          </strong>
-        </span>
-      </div>
-    </script>
   </head>
 
   <body>
-    <div id="control">
-      <div id="actions">
-        Peer ID is <span id="pid"></span><br>
-        Connect to a peer: <input type="text" id="rid" placeholder="Someone's id"><input class="button" type="button" value="Connect" id="connect"><br>
-        <button id="close">Close connection</button><br><br>
-      </div>
+    <iframe id="iframe" src="presentation"></iframe>
 
-      <div id="remote-control">
-        <button class="slide-button" data-action="next">Next</button><br>
-        <button class="slide-button" data-action="prev">Prev</button><br><br>
+    <div id="connection-controls">
+      <div>
+        Your PeerJS id: <span id="peer-id"></span>
       </div>
-
-      <div id="toogle">
-        <button class="toggle-remote">Toggle remote</button>
-        <button class="toggle-iframe">Toggle iframe</button>
+      <div class="not-connected">
+        Connect to:
+          <input type="text" id="connect-to-id">
+          <button id="connect">Connect</button>
       </div>
+      <div class="connected">
+        Connected to:
+          <span></span>
+          <button id="disconnect">Disconnect</button>
+      </div>
+      <button class="toggle-connection-controls">Hide</button>
     </div>
 
-    <iframe id="iframe" src="presentation" width="100%" height="100%"></iframe>
+    <div id="slide-controls">
+      <button class="toggle-connection-controls">Connection</button>
+      <br><br><br>
+      <button class="slide-button" data-action="prev">Prev</button>
+      <button class="slide-button" data-action="next">Next</button>
+    </div>
+
+    <div id="overlay"></div>
   </body>
 </html>
