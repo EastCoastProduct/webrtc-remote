@@ -2,67 +2,61 @@ html, body {
   height: 100%;
   padding: 0;
   margin: 0;
+  font-family: Palatino;
+  font-size: 12px;
 }
 
 iframe {
   border: none;
-}
-
-#control {
-  margin: 0 100px;
-}
-
-#actions {
-  float: left;
-}
-
-#remote-control {
-  float: right;
-  width: 100px;
-}
-
-#toogle {
-  float: left;
   width: 100%;
+  /*height: 100%;*/
+  height: calc(100% - 80px);
 }
 
-#remote-control > button {
-  width: 100%;
-}
-
-#iframe-selector {
-  float: left;
-  width: 100%;
-  margin-top:12px;
-}
-
-.overlay {
+#overlay {
   position: absolute;
   top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: rgba(0,0,0,0.1);
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0,0,0,0.2);
+  z-index: 10;
+  display: none;
 }
 
-.modal {
+/*----- connection-controls -----*/
+#connection-controls {
+  margin: 0 auto;
+  margin-left: -180px;
+
   position: fixed;
-  top: 15%;
+  top: 30%;
   left: 50%;
+
   width: 320px;
+  padding: 30px 0 30px 40px;
   background-color: white;
-  margin: 0 auto;
-  margin-left: -160px;
-  text-align: center;
-  padding: 0 10px;
-}
+  border-radius: 5px;
 
-.modal > button {
-  display: block;
-  margin: 0 auto;
-  margin-top: 10px;
+  z-index: 11;
+  display: none;
 }
+  #connection-controls > div {
+    margin-bottom: 7px;
+  }
 
-.modal > button:first-child {
-  margin-top: 20px;
+  span {
+    font-weight: bold;
+    font-size: 1.2em;
+  }
+
+  div.connected {
+    display: none;
+  }
+
+/*----- slide-controls -----*/
+
+@media only screen and (max-width: 3600px) {
+  #slide-controls {
+    display: block;
+  }
 }
