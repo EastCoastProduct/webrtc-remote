@@ -1,75 +1,13 @@
-(function(){
-  var peer = new Peer({
-    key: 'x7fwx2kavpy6tj4i',
-    debug: 0
-  });
+(function() {
+  var peer = new Peer({ key: 'x7fwx2kavpy6tj4i', debug: 0 });
 
+  var boundPeer;
+  var boundPeerConnection;
   var connectedPeers = {};
 
-  peer.on('open', function(id){ $('#pid').text(id); });
-  peer.on('connection', askApproval);
+  peer.on('open', function(id) { $('#peer-id').text(id); });
+  peer.on('connection', connect);
   peer.on('error', function(err) { console.log(err); });
-
-
-  function showApproveModal(peerCode) {
-    $('body').append(Mustache.render($('#approve-modal-template').html(), {peerCode: peerCode}));
-  }
-
-  function showChatbox(peerCode) {
-    $('#actions').append(Mustache.render($('#chatbox-template').html(), {peerCode: peerCode}));
-  }
-
-  function askApproval(c) {
-    showApproveModal(c.peer);
-
-    $('button.approve').click(function() {
-      $('.overlay').remove();
-      connect(c);
-    });
-
-    $('button.deny').click(function() {
-      $('.overlay').remove();
-      c.close();
-    });
-  }
-
-  function connect(c) {
-    if (c.label === 'chat') {
-      showChatbox(c.peer);
-
-      c.on('data', function(data) {
-        console.log('asdasdasdasd');
-        triggerButton(getButtonCode(data));
-      });
-
-      c.on('close', function() {
-        $('.chatbox').remove();
-
-        if ($('.connection').length === 0) {
-          delete connectedPeers[c.peer];
-        }
-      });
-    }
-    connectedPeers[c.peer] = 1;
-  }
-
-  function getButtonCode(command) {
-    if(command === 'next') {
-      return 39;
-    } else if(command === 'prev') {
-      return 37;
-    }
-    return false;
-  }
-
-  function triggerButtonEvent(eventName, buttonCode) {
-    var e = new KeyboardEvent(eventName, {bubbles:true});
-
-    Object.defineProperty(e, 'keyCode', {get:function(){return buttonCode;}});
-    Object.defineProperty(e, 'which', {get:function(){return buttonCode;}});
-
-    var qwe = document.getElementById('iframe').contentWindow.document.body.dispatchEvent(e);
-  }
 
   function triggerButton(buttonCode) {
     if(!buttonCode) return false;
@@ -78,85 +16,71 @@
     triggerButtonEvent('keyup', buttonCode);
   }
 
-  $(document).ready(function() {
-    function doNothing(e){
-      e.preventDefault();
-      e.stopPropagation();
+  function triggerButtonEvent(eventName, buttonCode) {
+    var e = new KeyboardEvent(eventName, {bubbles:true});
+
+    Object.defineProperty(e, 'keyCode', { get:function() { return buttonCode; } });
+    Object.defineProperty(e, 'which',   { get:function() { return buttonCode; } });
+
+    document.getElementById('iframe').contentWindow.document.body.dispatchEvent(e);
+  }
+
+  function showConnectionStatus(status) {
+    $('div.connected').toggle();
+    $('div.not-connected').toggle();
+
+    if(!!boundPeer) {
+      $('.connected > span').append(boundPeer);
+    } else {
+      $('.connected > span').html('');
     }
+  }
 
-    $('#iframe-selector > select').change(function(){
-      document.getElementById('iframe').src = $(this).val();
+  function connect(connection) {
+    boundPeer = connection.peer;
+    boundPeerConnection = connection;
+    showConnectionStatus();
+
+    connection.on('data', function(data){
+      triggerButton(data);
     });
 
-    $('.toggle-remote').click(function() {
-      $('#control').toggle();
+    connection.on('close', function(){
+      boundPeer = undefined;
+      showConnectionStatus();
     });
+  }
 
-    $('.toggle-iframe').click(function() {
-      $('iframe').toggle();
-    });
-
+  $(document).ready(function() {
     $('#iframe').ready(function() {
-
       $('.slide-button').click(function() {
         var action = $(this).data('action');
 
-        triggerButton(getButtonCode(action));
+        if(action === 'prev') { var code = 37; }
+        if(action === 'next') { var code = 39; }
 
-        eachActiveConnection(function(c, $c) {
-          if (c.label === 'chat') {
-            c.send(action);
-          }
-        });
+        triggerButton(code);
+        boundPeerConnection.send(code);
       });
-
-
     });
 
-    $('iframe').load(function() {
-      var e = $.Event("keydown", {keyCode: 64});
+    $('.toggle-connection-controls').click(function() {
+      $('#overlay').toggle();
+      $('#connection-controls').toggle();
     });
 
     $('#connect').click(function() {
-      var requestedPeer = $('#rid').val();
-      if (!connectedPeers[requestedPeer]) {
+      if(!boundPeer) {
+        var connection = peer.connect($('#connect-to-id').val());
 
-        var c = peer.connect(requestedPeer, {
-          label: 'chat',
-          serialization: 'none',
-          metadata: {message: 'hi i want to chat with you!'}
-        });
-        c.on('open', function() {
-          connect(c);
-        });
-        c.on('error', function(err) { alert(err); });
+        connection.on('open', connect(connection));
+        connection.on('error', function(err) { alert(err); });
       }
-      connectedPeers[requestedPeer] = 1;
     });
 
-    $('#close').click(function() {
-      eachActiveConnection(function(c) {
-        c.close();
-      });
+    $('#disconnect').click(function() {
+      boundPeerConnection.close();
     });
-
-    function eachActiveConnection(fn) {
-      var actives = $('.active');
-      var checkedIds = {};
-      actives.each(function() {
-        var peerId = $(this).attr('id');
-
-        if (!checkedIds[peerId]) {
-          var conns = peer.connections[peerId];
-          for (var i = 0, ii = conns.length; i < ii; i += 1) {
-            var conn = conns[i];
-            fn(conn);
-          }
-        }
-
-        checkedIds[peerId] = 1;
-      });
-    }
   });
 
   window.onunload = window.onbeforeunload = function(e) {
