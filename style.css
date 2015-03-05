@@ -39,8 +39,12 @@ iframe {
   z-index: 11;
   display: none;
 }
-  #connection-controls > div {
+  #connection-controls > div, ul {
     margin-bottom: 7px;
+  }
+
+  ul {
+    list-style: none;
   }
 
   span {
