@@ -3,13 +3,13 @@
   <head>
     <title>WebRTC test</title>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-    <script type="text/javascript" src="http://cdn.peerjs.com/0.3/peer.js"></script>
+    <script type="text/javascript" src="http://cdn.peerjs.com/0.3/peer.min.js"></script>
     <script type="text/javascript" src="script.js"></script>
     <link href="style.css" rel="stylesheet" type="text/css">
   </head>
 
   <body>
-    <iframe id="iframe" src="presentation-3"></iframe>
+    <iframe id="iframe" src="presentation"></iframe>
 
     <div id="connection-controls">
       <div>
@@ -19,14 +19,14 @@
         Connect to:
           <input type="text" id="connect-to-id">
           <button id="connect">Connect</button>
+
+          <ul class="candidates"></ul>
       </div>
       <div class="connected">
         Connected to:
           <span></span>
           <button id="disconnect">Disconnect</button>
       </div>
-      <ul class="candidates">
-      </ul>
       <button class="toggle-connection-controls">Hide</button>
     </div>
 

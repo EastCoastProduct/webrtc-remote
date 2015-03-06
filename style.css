@@ -47,6 +47,11 @@ iframe {
     list-style: none;
   }
 
+  li {
+    margin-bottom: 7px;
+    cursor: pointer;
+  }
+
   span {
     font-weight: bold;
     font-size: 1.2em;

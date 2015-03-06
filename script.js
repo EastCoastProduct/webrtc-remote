@@ -9,17 +9,15 @@
   peer.on('error', function(err) { console.log(err); });
 
   function triggerButton(buttonCode) {
-    if(!buttonCode) return false;
-
     triggerButtonEvent('keydown', buttonCode);
     triggerButtonEvent('keyup', buttonCode);
   }
 
   function triggerButtonEvent(eventName, buttonCode) {
-    var e = new KeyboardEvent(eventName, {bubbles:true});
+    var e = new KeyboardEvent(eventName, { bubbles: true });
 
-    Object.defineProperty(e, 'keyCode', { get:function() { return buttonCode; } });
-    Object.defineProperty(e, 'which',   { get:function() { return buttonCode; } });
+    Object.defineProperty(e, 'keyCode', { get: function() { return buttonCode; } });
+    Object.defineProperty(e, 'which',   { get: function() { return buttonCode; } });
 
     document.getElementById('iframe').contentWindow.document.body.dispatchEvent(e);
   }
@@ -28,31 +26,57 @@
     $('div.connected').toggle();
     $('div.not-connected').toggle();
 
-    if(!!boundPeer) {
+    if(boundPeer) {
       $('.connected > span').append(boundPeer);
     } else {
       $('.connected > span').html('');
     }
   }
 
-  function addCandidate(peerId) {
-    $('.connected').hide();
+  function clearCandidates() {
+    $.each(peerConnections, function(key, value) {
+      if(key === boundPeer) return;
+
+      peerConnections[key].close();
+      delete peerConnections[key];
+    });
+
+    $('.candidates').html('');
+  }
+
+  function displayCandidate(peerId) {
     $('.candidates').append('<li data-peer-id="' + peerId + '">' + peerId + '</li>');
   }
 
+  function removeCandidate(connection) {
+    connection.close();
+    delete peerConnections[connection.peer];
+
+    $('.candidates').find('[data-peer-id=' + connection.peer + ']').remove();
+  }
+
+  function addCandidate(connection) {
+    peerConnections[connection.peer] = connection;
+    displayCandidate(connection.peer);
+
+    connection.on('close', function() {
+      removeCandidate(connection);
+    });
+  }
+
   function connectionOffer(connection) {
-    if(boundPeer) {
-      connection.on('open', function(){
+    if(!boundPeer) {
+      addCandidate(connection);
+    } else {
+      connection.on('open', function() {
         connection.close();
       });
-    } else {
-      peerConnections[connection.peer] = connection;
-      addCandidate(connection.peer);
     }
   }
 
   function connect(peerId) {
     boundPeer = peerId;
+    clearCandidates();
     showConnectionStatus();
 
     peerConnections[boundPeer].on('data', function(data) {
@@ -60,6 +84,7 @@
     });
 
     peerConnections[boundPeer].on('close', function() {
+      delete peerConnections[boundPeer];
       boundPeer = undefined;
       showConnectionStatus();
     });
@@ -80,29 +105,29 @@
       });
     });
 
-    $('.candidates').on('click', 'li', function() {
-      connect($(this).data('peerId'));
-    });
-
     $('.toggle-connection-controls').click(function() {
       $('#overlay').toggle();
       $('#connection-controls').toggle();
     });
 
+    $('.candidates').on('click', 'li', function() {
+      connect($(this).data('peerId'));
+    });
+
     $('#connect').click(function() {
-      if(!boundPeer) {
-        var connection = peer.connect($('#connect-to-id').val());
+      var peerId = $('#connect-to-id').val();
+      if(!boundPeer && peerId) {
+        var connection = peer.connect(peerId);
         peerConnections[connection.peer] = connection;
 
         connection.on('open', connect(connection.peer));
-        connection.on('error', function(err) {  console.log(err); });
+        connection.on('error', function(err) { console.log(err); });
       }
     });
 
     $('#disconnect').click(function() {
       if(boundPeer) {
         peerConnections[boundPeer].close();
-        peerConnections[boundPeer] = undefined;
       }
     });
   });
